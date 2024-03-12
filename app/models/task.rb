@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Task
-  attr_reader :name, :date, :status
+  attr_reader :name, :date, :status, :id
 
   def initialize
     @status = :open
