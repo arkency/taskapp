@@ -71,7 +71,7 @@ class TaskServiceTest < ActiveSupport::TestCase
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert tasks_stream.count.equal?(2)
     task_deleted = tasks_stream.last
-    assert task_deleted.class.eql?("TaskDeleted")
+    assert task_deleted.class.eql?(TaskDeleted)
     assert task_deleted.data.fetch(:task_id).eql?(uuid)
   end
 
