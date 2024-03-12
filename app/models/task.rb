@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Task
-  attr_reader :name, :date
+  attr_reader :name, :date, :status
 
   def initialize
     @status = :open
@@ -27,4 +27,19 @@ class Task
     @status = :open
   end
 
+  def apply(event)
+    case event.event_type
+    when "TaskCreated"
+    when "TaskNameChanged"
+      change_name(event.data.fetch(:name))
+    when "TaskDateAssigned"
+      assign_date(event.data.fetch(:date))
+    when "TaskCompleted"
+      complete
+    when "TaskDeleted"
+      delete
+    when "TaskReopened"
+      reopen
+    end
+  end
 end

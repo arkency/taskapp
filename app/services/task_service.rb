@@ -9,7 +9,26 @@ class TaskService
   end
 
   def change_name(task_id, new_name)
+    return unless find_task(task_id).status.eql?(:open)
     event_store.publish(TaskNameChanged.new(data: { name: new_name }), stream_name: "Task$#{task_id}")
+  end
+
+  def delete_task(task_id)
+    event_store.publish(TaskDeleted.new, stream_name: "Task$#{task_id}")
+  end
+
+  def assign_date(task_id, new_date)
+    return unless find_task(task_id).status.eql?(:open)
+    event_store.publish(TaskDateAssigned.new(data: { date: new_date }), stream_name: "Task$#{task_id}")
+  end
+
+  def complete_task(task_id)
+    event_store.publish(TaskCompleted.new, stream_name: "Task$#{task_id}")
+  end
+
+  def reopen_task(task_id)
+    return unless find_task(task_id).status.eql?(:completed)
+    event_store.publish(TaskReopened.new, stream_name: "Task$#{task_id}")
   end
 
   def find_task(task_id)
