@@ -6,7 +6,8 @@ class TaskServiceTest < ActiveSupport::TestCase
 
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert tasks_stream.count.equal?(1)
-    assert tasks_stream.last.event_type.eql?("TaskCreated")
+    assert tasks_stream.last.class.eql?(TaskCreated)
+    assert tasks_stream.last.data.fetch(:task_id).eql?(uuid)
   end
 
   test "change name of task" do
@@ -18,8 +19,9 @@ class TaskServiceTest < ActiveSupport::TestCase
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert tasks_stream.count.equal?(2)
     task_name_changed = tasks_stream.last
-    assert task_name_changed.event_type.eql?("TaskNameChanged")
+    assert task_name_changed.class.eql?(TaskNameChanged)
     assert task_name_changed.data.fetch(:name).eql?("Introduce RailsEventStore to the project")
+    assert task_name_changed.data.fetch(:task_id).eql?(uuid)
   end
 
   test "when task is completed then name cannot be changed" do
@@ -30,7 +32,7 @@ class TaskServiceTest < ActiveSupport::TestCase
 
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert tasks_stream.count.equal?(2)
-    assert tasks_stream.last.event_type.eql?("TaskCompleted")
+    assert tasks_stream.last.class.eql?(TaskCompleted)
   end
 
   test "task can be completed" do
@@ -42,7 +44,22 @@ class TaskServiceTest < ActiveSupport::TestCase
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert tasks_stream.count.equal?(2)
     task_completed = tasks_stream.last
-    assert task_completed.event_type.eql?("TaskCompleted")
+    assert task_completed.class.eql?(TaskCompleted)
+    assert task_completed.data.fetch(:task_id).eql?(uuid)
+  end
+
+  test "deleted task cannot be completed" do
+    task_service = TaskService.new
+    uuid = task_service.create_task
+    task_service.delete_task(uuid)
+
+    task_service.complete_task(uuid)
+
+    tasks_stream = event_store.read.stream("Task$#{uuid}")
+    assert tasks_stream.count.equal?(2)
+    task_deleted = tasks_stream.last
+    assert task_deleted.class.eql?(TaskDeleted)
+    assert task_deleted.data.fetch(:task_id).eql?(uuid)
   end
 
   test "task can be deleted" do
@@ -54,7 +71,8 @@ class TaskServiceTest < ActiveSupport::TestCase
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert tasks_stream.count.equal?(2)
     task_deleted = tasks_stream.last
-    assert task_deleted.event_type.eql?("TaskDeleted")
+    assert task_deleted.class.eql?("TaskDeleted")
+    assert task_deleted.data.fetch(:task_id).eql?(uuid)
   end
 
   test "completed task can be reopened" do
@@ -67,7 +85,8 @@ class TaskServiceTest < ActiveSupport::TestCase
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert tasks_stream.count.equal?(3)
     task_reopened = tasks_stream.last
-    assert task_reopened.event_type.eql?("TaskReopened")
+    assert task_reopened.class.eql?(TaskReopened)
+    assert task_reopened.data.fetch(:task_id).eql?(uuid)
   end
 
   test "deleted task cannot be reopened" do
@@ -89,8 +108,9 @@ class TaskServiceTest < ActiveSupport::TestCase
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert tasks_stream.count.equal?(2)
     task_date_assigned = tasks_stream.last
-    assert task_date_assigned.event_type.eql?("TaskDateAssigned")
+    assert task_date_assigned.class.eql?(TaskDateAssigned)
     assert task_date_assigned.data.fetch(:date).eql?(Date.new(2019, 12, 31))
+    assert task_date_assigned.data.fetch(:task_id).eql?(uuid)
   end
 
   test "date of task can be reassigned" do
@@ -102,7 +122,7 @@ class TaskServiceTest < ActiveSupport::TestCase
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert tasks_stream.count.equal?(3)
     task_date_assigned = tasks_stream.last
-    assert task_date_assigned.event_type.eql?("TaskDateAssigned")
+    assert task_date_assigned.class.eql?(TaskDateAssigned)
     assert task_date_assigned.data.fetch(:date).eql?(Date.new(2020, 1, 1))
   end
 
@@ -114,7 +134,7 @@ class TaskServiceTest < ActiveSupport::TestCase
 
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert tasks_stream.count.equal?(2)
-    assert tasks_stream.last.event_type.eql?("TaskCompleted")
+    assert tasks_stream.last.class.eql?(TaskCompleted)
   end
 
   test "when task is deleted name cannot be changed" do
@@ -125,7 +145,7 @@ class TaskServiceTest < ActiveSupport::TestCase
 
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert tasks_stream.count.equal?(2)
-    assert tasks_stream.last.event_type.eql?("TaskDeleted")
+    assert tasks_stream.last.class.eql?(TaskDeleted)
   end
 
   test "when task is deleted date cannot be changed" do
@@ -136,7 +156,7 @@ class TaskServiceTest < ActiveSupport::TestCase
 
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert tasks_stream.count.equal?(2)
-    assert tasks_stream.last.event_type.eql?("TaskDeleted")
+    assert tasks_stream.last.class.eql?(TaskDeleted)
   end
 
   test "when task is reopened date can be changed" do
@@ -149,7 +169,7 @@ class TaskServiceTest < ActiveSupport::TestCase
     tasks_stream = event_store.read.stream("Task$#{uuid}")
     assert_equal 4, tasks_stream.count
     task_date_assigned = tasks_stream.last
-    assert task_date_assigned.event_type.eql?("TaskDateAssigned")
+    assert task_date_assigned.class.eql?(TaskDateAssigned)
     assert task_date_assigned.data.fetch(:date).eql?(Date.new(2019, 12, 31))
   end
 
@@ -157,10 +177,15 @@ class TaskServiceTest < ActiveSupport::TestCase
     task_service = TaskService.new
     uuid = task_service.create_task
     task_service.change_name(uuid, "Introduce RailsEventStore to the project")
+    task_service.assign_date(uuid, Date.new(2019, 12, 31))
+    task_service.complete_task(uuid)
 
     task = task_service.find_task(uuid)
 
+    assert task.id.eql?(uuid)
     assert task.name.eql?("Introduce RailsEventStore to the project")
+    assert task.date.eql?(Date.new(2019, 12, 31))
+    assert task.status.eql?(:completed)
   end
 
   private
