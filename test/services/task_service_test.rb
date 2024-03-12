@@ -48,6 +48,20 @@ class TaskServiceTest < ActiveSupport::TestCase
     assert task_completed.data.fetch(:task_id).eql?(uuid)
   end
 
+  test "deleted task cannot be completed" do
+    task_service = TaskService.new
+    uuid = task_service.create_task
+    task_service.delete_task(uuid)
+
+    task_service.complete_task(uuid)
+
+    tasks_stream = event_store.read.stream("Task$#{uuid}")
+    assert tasks_stream.count.equal?(2)
+    task_deleted = tasks_stream.last
+    assert task_deleted.class.eql?(TaskDeleted)
+    assert task_deleted.data.fetch(:task_id).eql?(uuid)
+  end
+
   test "task can be deleted" do
     task_service = TaskService.new
     uuid = task_service.create_task

@@ -23,6 +23,7 @@ class TaskService
   end
 
   def complete_task(task_id)
+    return unless find_task(task_id).status.eql?(:open)
     event_store.publish(TaskCompleted.new(data: { task_id: }), stream_name: "Task$#{task_id}")
   end
 
