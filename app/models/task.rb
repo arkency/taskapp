@@ -30,6 +30,7 @@ class Task
   def apply(event)
     case event.event_type
     when "TaskCreated"
+      @id = event.data.fetch(:task_id)
     when "TaskNameChanged"
       change_name(event.data.fetch(:name))
     when "TaskDateAssigned"
