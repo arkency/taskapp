@@ -28,18 +28,18 @@ class Task
   end
 
   def apply(event)
-    case event.event_type
-    when "TaskCreated"
+    case event
+    when TaskCreated
       @id = event.data.fetch(:task_id)
-    when "TaskNameChanged"
+    when TaskNameChanged
       change_name(event.data.fetch(:name))
-    when "TaskDateAssigned"
+    when TaskDateAssigned
       assign_date(event.data.fetch(:date))
-    when "TaskCompleted"
+    when TaskCompleted
       complete
-    when "TaskDeleted"
+    when TaskDeleted
       delete
-    when "TaskReopened"
+    when TaskReopened
       reopen
     end
   end
