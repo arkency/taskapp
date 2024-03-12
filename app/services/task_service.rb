@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class TaskService
-
   def create_task
     uuid = SecureRandom.uuid
     event_store.publish(TaskCreated.new(data: { task_id: uuid }), stream_name: "Task$#{uuid}")
