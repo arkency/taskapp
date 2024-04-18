@@ -188,6 +188,38 @@ class TaskServiceTest < ActiveSupport::TestCase
     assert task.status.eql?(:completed)
   end
 
+  test "something with date ~~~" do
+    Timecop.freeze(Date.new(2019, 12, 31))
+    task_service = TaskService.new
+    uuid = task_service.create_task
+    task_service.change_name(uuid, "Introduce RailsEventStore to the project")
+    task_service.assign_date(uuid, Date.current)
+    task_service.complete_task(uuid)
+
+    task = task_service.find_task(uuid)
+
+    assert task.id.eql?(uuid)
+    assert task.name.eql?("Introduce RailsEventStore to the project")
+    assert task.date.eql?(Date.new(2019, 12, 31))
+    assert task.status.eql?(:completed)
+  end
+
+  test "something else with date ~~~" do
+    task_end_date = Date.current
+    task_service = TaskService.new
+    uuid = task_service.create_task
+    task_service.change_name(uuid, "Introduce RailsEventStore to the project")
+    task_service.assign_date(uuid, Date.new(2021, 12, 31))
+    task_service.complete_task(uuid)
+
+    task = task_service.find_task(uuid)
+
+    assert task.id.eql?(uuid)
+    assert task.name.eql?("Introduce RailsEventStore to the project")
+    assert task.date < task_end_date
+    assert task.status.eql?(:completed)
+  end
+
   private
 
   def event_store
