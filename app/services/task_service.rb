@@ -1,43 +1,51 @@
 # frozen_string_literal: true
 
 class TaskService
-
   def create_task
     uuid = SecureRandom.uuid
-    event_store.publish(TaskCreated.new(data: { task_id: uuid }), stream_name: "Task$#{uuid}")
+    # task = Task.create_factory_method(uuid) #1
+    # task = Task.new # 3
+    # task.create(uuid) # 3
+    task = Task.new(uuid)
+    task.create # 4
+    AggregateRoot::Repository.new.store(task, "Task$#{uuid}")
     uuid
   end
 
   def change_name(task_id, new_name)
-    return unless find_task(task_id).status.eql?(:open)
-    event_store.publish(TaskNameChanged.new(data: { name: new_name, task_id: }), stream_name: "Task$#{task_id}")
+    task = find_task(task_id)
+    task.change_name(new_name)
+    @repository.store(task, "Task$#{task_id}")
   end
 
   def delete_task(task_id)
-    event_store.publish(TaskDeleted.new(data: { task_id: }), stream_name: "Task$#{task_id}")
+    task = find_task(task_id)
+    task.delete
+    @repository.store(task, "Task$#{task_id}")
   end
 
   def assign_date(task_id, new_date)
-    return unless find_task(task_id).status.eql?(:open)
-    event_store.publish(TaskDateAssigned.new(data: { date: new_date, task_id: }), stream_name: "Task$#{task_id}")
+    task = find_task(task_id)
+    task.assign_date(new_date)
+    @repository.store(task, "Task$#{task_id}")
   end
 
   def complete_task(task_id)
-    return unless find_task(task_id).status.eql?(:open)
-    event_store.publish(TaskCompleted.new(data: { task_id: }), stream_name: "Task$#{task_id}")
+    task = find_task(task_id)
+    task.complete
+    @repository.store(task, "Task$#{task_id}")
   end
 
   def reopen_task(task_id)
-    return unless find_task(task_id).status.eql?(:completed)
-    event_store.publish(TaskReopened.new(data: { task_id: }), stream_name: "Task$#{task_id}")
+    task = find_task(task_id)
+    task.reopen
+    @repository.store(task, "Task$#{task_id}")
   end
 
   def find_task(task_id)
-    task = Task.new
-    event_store.read.stream("Task$#{task_id}").each do |event|
-      task.apply(event)
-    end
-    task
+    @repository ||= AggregateRoot::Repository.new
+    # @repository.load(Task.new(task_id), "Task$#{task_id}")  #1
+    @repository.load(Task.new(task_id), "Task$#{task_id}") # 3
   end
 
   private
