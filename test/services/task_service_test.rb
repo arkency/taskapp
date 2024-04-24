@@ -188,6 +188,48 @@ class TaskServiceTest < ActiveSupport::TestCase
     assert task.status.eql?(:completed)
   end
 
+  test "build report" do
+    task_service = TaskService.new
+    uuid_1 = task_service.create_task
+    task_service.change_name(uuid_1, "Introduce RailsEventStore to the project")
+    task_service.assign_date(uuid_1, Date.new(2019, 12, 31))
+    task_service.complete_task(uuid_1)
+    task_service.reopen_task(uuid_1)
+
+    task_service.complete_task(uuid_1)
+    task_service.reopen_task(uuid_1)
+
+    task_service.complete_task(uuid_1)
+    task_service.reopen_task(uuid_1)
+
+    task_service.complete_task(uuid_1)
+
+    report = task_service.completed_tasks_reopened(uuid_1)
+    assert report[:completed] == 4
+    assert report[:reopened] == 3
+
+    uuid_2 = task_service.create_task
+    task_service.change_name(uuid_2, "Introduce RailsEventStore to the project")
+    task_service.assign_date(uuid_2, Date.new(2019, 12, 31))
+    task_service.complete_task(uuid_2)
+    task_service.reopen_task(uuid_2)
+
+    task_service.complete_task(uuid_2)
+    task_service.reopen_task(uuid_2)
+
+    task_service.complete_task(uuid_2)
+    task_service.reopen_task(uuid_2)
+
+    task_service.complete_task(uuid_2)
+    task_service.reopen_task(uuid_2)
+
+    report2 = task_service.all_completed_tasks_reopened
+    assert report2.fetch(uuid_1) == 3
+
+    report2 = task_service.all_completed_tasks_reopened
+    assert report2.fetch(uuid_2) == 4
+  end
+
   private
 
   def event_store

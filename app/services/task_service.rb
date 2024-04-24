@@ -48,12 +48,32 @@ class TaskService
     RailsEventStore::Projection
       .from_stream("Task$#{task_id}")
       .init(-> { { status: :open } })
-      .when(TaskCreated, ->(state, event) { state[:status] = :open; state[:id] = event.data.fetch(:task_id)})
+      .when(TaskCreated, ->(state, event) { state[:status] = :open; state[:id] = event.data.fetch(:task_id) })
       .when(TaskCompleted, ->(state, event) { state[:status] = :completed })
       .when(TaskDeleted, ->(state, event) { state[:status] = :deleted })
       .when(TaskReopened, ->(state, event) { state[:status] = :open })
       .when(TaskDateAssigned, ->(state, event) { state[:date] = event.data.fetch(:date) })
       .when(TaskNameChanged, ->(state, event) { state[:name] = event.data.fetch(:name) })
+      .run(event_store)
+  end
+
+  def completed_tasks_reopened(task_id)
+    RailsEventStore::Projection
+      .from_stream("Task$#{task_id}")
+      .init(-> { { completed: 0, reopened: 0 } })
+      .when(TaskCompleted, ->(state, event) { state[:completed] += 1 })
+      .when(TaskReopened, ->(state, event) { state[:reopened] += 1 })
+      .run(event_store)
+  end
+
+  def all_completed_tasks_reopened
+    RailsEventStore::Projection
+      .from_all_streams
+      .init(-> { { } })
+      .when(TaskReopened, ->(state, event) do
+        state[event.data.fetch(:task_id)] ||= 0; state[event.data.fetch(:task_id)] += 1
+      end
+      )
       .run(event_store)
   end
 
