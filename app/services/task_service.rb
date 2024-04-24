@@ -44,6 +44,19 @@ class TaskService
     @repository.load(Task.new(task_id), "Task$#{task_id}")
   end
 
+  def task_state(task_id)
+    RailsEventStore::Projection
+      .from_stream("Task$#{task_id}")
+      .init(-> { { status: :open } })
+      .when(TaskCreated, ->(state, event) { state[:status] = :open; state[:id] = event.data.fetch(:task_id)})
+      .when(TaskCompleted, ->(state, event) { state[:status] = :completed })
+      .when(TaskDeleted, ->(state, event) { state[:status] = :deleted })
+      .when(TaskReopened, ->(state, event) { state[:status] = :open })
+      .when(TaskDateAssigned, ->(state, event) { state[:date] = event.data.fetch(:date) })
+      .when(TaskNameChanged, ->(state, event) { state[:name] = event.data.fetch(:name) })
+      .run(event_store)
+  end
+
   private
 
   def event_store
