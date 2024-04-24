@@ -5,28 +5,7 @@ class Task
 
   attr_reader :name, :date, :status, :id
 
-  # def self.create_factory_method(uuid) #1
-  #   new(uuid).tap { |task| task.apply(TaskCreated.new(data: { task_id: uuid })) }
-  # end
-  #
-  # def initialize(uuid) #1
-  #   @id = uuid
-  #   @status = :open
-  # end
-
-  # def self.create(uuid) # 2
-  #   new.tap { |task| task.create(uuid) }
-  # end
-
-  # def create(uuid) # 3
-  #   apply(TaskCreated.new(data: { task_id: uuid }))
-  # end
-
-  # def initialize # 3
-  #   @status = :open
-  # end
-
-  def create # 4
+  def create
     apply(TaskCreated.new(data: { task_id: id }))
   end
 

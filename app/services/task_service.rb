@@ -3,11 +3,8 @@
 class TaskService
   def create_task
     uuid = SecureRandom.uuid
-    # task = Task.create_factory_method(uuid) #1
-    # task = Task.new # 3
-    # task.create(uuid) # 3
     task = Task.new(uuid)
-    task.create # 4
+    task.create
     AggregateRoot::Repository.new.store(task, "Task$#{uuid}")
     uuid
   end
@@ -44,8 +41,7 @@ class TaskService
 
   def find_task(task_id)
     @repository ||= AggregateRoot::Repository.new
-    # @repository.load(Task.new(task_id), "Task$#{task_id}")  #1
-    @repository.load(Task.new(task_id), "Task$#{task_id}") # 3
+    @repository.load(Task.new(task_id), "Task$#{task_id}")
   end
 
   private
