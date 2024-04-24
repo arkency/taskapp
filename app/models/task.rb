@@ -14,36 +14,30 @@ class Task
   end
 
   def change_name(new_name)
-    @name = new_name
     return unless status.eql?(:open)
     apply(TaskNameChanged.new(data: { name: new_name, task_id: id }))
   end
 
   def assign_date(new_date)
     return unless status.eql?(:open)
-    @date = new_date
     apply(TaskDateAssigned.new(data: { date: new_date, task_id: id }))
   end
 
   def complete
     return unless status.eql?(:open)
-    @status = :completed
     apply(TaskCompleted.new(data: { task_id: id }))
   end
 
   def delete
-    @status = :deleted
     apply(TaskDeleted.new(data: { task_id: id }))
   end
 
   def reopen
     return unless status.eql?(:completed)
-    @status = :open
     apply(TaskReopened.new(data: { task_id: id }))
   end
 
   on TaskCreated do |event|
-    @id = event.data.fetch(:task_id)
     @status = :open
   end
 
@@ -53,7 +47,6 @@ class Task
 
   on TaskDateAssigned do |event|
     @date = event.data.fetch(:date)
-
   end
 
   on TaskCompleted do |_|
