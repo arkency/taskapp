@@ -37,7 +37,7 @@ class Task
     apply(TaskReopened.new(data: { task_id: id }))
   end
 
-  on TaskCreated do |event|
+  on TaskCreated do |_|
     @status = :open
   end
 
