@@ -3,8 +3,6 @@
 class Task
   include AggregateRoot
 
-  attr_reader :name, :date, :status, :id
-
   def create
     apply(TaskCreated.new(data: { task_id: id }))
   end
@@ -36,6 +34,10 @@ class Task
     return unless status.eql?(:completed)
     apply(TaskReopened.new(data: { task_id: id }))
   end
+
+  private
+
+  attr_reader :name, :date, :status, :id
 
   on TaskCreated do |_|
     @status = :open
