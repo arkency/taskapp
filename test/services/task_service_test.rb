@@ -225,8 +225,6 @@ class TaskServiceTest < ActiveSupport::TestCase
 
     report2 = task_service.all_completed_tasks_reopened
     assert report2.fetch(uuid_1) == 3
-
-    report2 = task_service.all_completed_tasks_reopened
     assert report2.fetch(uuid_2) == 4
   end
 
