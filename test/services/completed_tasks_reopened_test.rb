@@ -33,6 +33,19 @@ class CompletedTasksReopenedTest < ActiveSupport::TestCase
     assert_equal 1, completed_tasks_reopened[different_task_id]
   end
 
+  def test_no_completed_or_reopened_states_when_nothing_happened_for_task
+    completed_tasks_reopened = CompletedTasksReopened.new.for_task(SecureRandom.uuid)
+
+    assert_equal({ completed: 0, reopened: 0 }, completed_tasks_reopened)
+  end
+
+  def test_when_nothing_happened_then_there_is_nothing_to_report
+    completed_tasks_reopened = CompletedTasksReopened.new.all
+
+    assert_equal({ }, completed_tasks_reopened)
+  end
+
+
   private
 
   def event_store
