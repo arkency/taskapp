@@ -6,14 +6,7 @@ class EmployeeOfTheMonth
                .from_all_streams
                .init(-> { { completed_tasks_to_grab: [], employee_tasks: {} } })
                .when(TaskCompleted, ->(state, event) do
-                 if state[:employee_tasks].empty?
                    state[:completed_tasks_to_grab] << event.data.fetch(:task_id)
-                 end
-                 state[:employee_tasks].each do |employee_id, employee_data|
-                   if employee_data[:assigned_tasks].include?(event.data.fetch(:task_id))
-                     employee_data[:completed_tasks] += 1
-                   end
-                 end
                end)
                .when(EmployeeAssignedToTask, ->(state, event) do
                  state[:employee_tasks][event.data.fetch(:employee_id)] ||= { assigned_tasks: [], completed_tasks: 0 }
