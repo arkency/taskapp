@@ -26,6 +26,17 @@ class LinkAllWithNameParam
   end
 end
 
+class LinkTaskEvents
+  def initialize(event_store: Rails.configuration.event_store)
+    @event_store = event_store
+  end
+
+  def call(event)
+    task_id = event.data[:task_id]
+    @event_store.link([event.event_id], stream_name: "TaskManagement$#{Date.current.strftime('%Y-%m')}")
+  end
+end
+
 Rails.configuration.to_prepare do
   Rails.configuration.event_store = RailsEventStore::Client.new
   Rails.configuration.command_bus = Arkency::CommandBus.new
@@ -40,6 +51,8 @@ Rails.configuration.to_prepare do
     store.subscribe_to_all_events(RailsEventStore::LinkByCausationId.new)
     store.subscribe_to_all_events(LinkByTenantId.new)
     store.subscribe_to_all_events(LinkAllWithNameParam.new)
+
+    store.subscribe(LinkTaskEvents.new, to: [TaskCompleted, EmployeeAssignedToTask, EmployeeUnassignedFromTask])
     # store.subscribe_to_all_events(LinkByMetadata.new(event_store: event_store, key: :tenant_id))
   end
 end
