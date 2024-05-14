@@ -39,6 +39,19 @@ class EmployeeOfTheMonthTest < ActiveSupport::TestCase
     assert_equal 2, employee_of_the_month[:completed_tasks]
   end
 
+  def test_when_employee_is_unassigned_from_task_and_another_employee_is_assigned_to_it_then_task_is_counted_for_last_assigned_employee
+    task_id = SecureRandom.uuid
+
+    event_store.publish(EmployeeAssignedToTask.new(data: { task_id: task_id, employee_id: 1 }), stream_name: "TaskAssignments$#{task_id}")
+    event_store.publish(TaskCompleted.new(data: { task_id: task_id }), stream_name: "Task$#{task_id}")
+    event_store.publish(EmployeeUnassignedFromTask.new(data: { task_id: task_id, employee_id: 1 }), stream_name: "TaskAssignments$#{task_id}")
+    event_store.publish(EmployeeAssignedToTask.new(data: { task_id: task_id, employee_id: 2 }), stream_name: "TaskAssignments$#{task_id}")
+
+    employee_of_the_month = EmployeeOfTheMonth.new.call
+
+    assert_equal 2, employee_of_the_month[:employee_id]
+    assert_equal 1, employee_of_the_month[:completed_tasks]
+  end
 
   private
 
