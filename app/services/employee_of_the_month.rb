@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 class EmployeeOfTheMonth
-  def call
+  def call(month = Date.current)
     result = RailsEventStore::Projection
-               .from_all_streams
+               .from_stream("TaskManagement$#{month.strftime('%Y-%m')}")
                .init(-> { { completed_tasks_to_grab: [], employee_tasks: {} } })
                .when(TaskCompleted, ->(state, event) do
                  state[:completed_tasks_to_grab] << event.data.fetch(:task_id)
