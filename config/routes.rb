@@ -16,6 +16,7 @@ Rails.application.routes.draw do
   resources :projects do
     member do
       patch :start
+      patch :complete
     end
   end
 
