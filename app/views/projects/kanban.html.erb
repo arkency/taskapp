@@ -1,0 +1,83 @@
+<div class="container mx-auto py-8">
+  <h1 class="text-2xl font-bold mb-6">Projects</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div>
+      <h2 class="text-xl font-semibold mb-4">To do</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-300">
+          <thead class="bg-gray-200">
+          <tr>
+            <th class="py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Name</th>
+            <th class="py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Priority</th>
+            <th class="py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <% @todo_projects.each do |project| %>
+            <tr>
+              <td class="py-2 px-4 border border-gray-300"><%= project.name %></td>
+              <td class="py-2 px-4 border border-gray-300"><%= project.priority %></td>
+              <td class="py-2 px-4 border border-gray-300">
+                <%= button_to "Start", start_project_path(project.id), method: :patch, class: "bg-blue-500 text-white px-3 py-1 rounded" %>
+              </td>
+            </tr>
+          <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold mb-4">In Progress</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-300">
+          <thead class="bg-gray-200">
+          <tr>
+            <th class="py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Name</th>
+            <th class="py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Priority</th>
+            <th class="py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <% @in_progress_projects.each do |project| %>
+            <tr>
+              <td class="py-2 px-4 border border-gray-300"><%= project.name %></td>
+              <td class="py-2 px-4 border border-gray-300"><%= project.priority %></td>
+              <td class="py-2 px-4 border border-gray-300">
+                <%= button_to "Destroy", project, method: :delete, data: { confirm: "Are you sure?" }, class: "bg-red-500 text-white px-3 py-1 rounded" %>
+              </td>
+            </tr>
+          <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold mb-4">Completed</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-300">
+          <thead class="bg-gray-200">
+          <tr>
+            <th class="py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Name</th>
+            <th class="py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Priority</th>
+            <th class="py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <% @completed_projects.each do |project| %>
+            <tr>
+              <td class="py-2 px-4 border border-gray-300"><%= project.name %></td>
+              <td class="py-2 px-4 border border-gray-300"><%= project.priority %></td>
+              <td class="py-2 px-4 border border-gray-300">
+                <%= button_to "Destroy", project, method: :delete, data: { confirm: "Are you sure?" }, class: "bg-red-500 text-white px-3 py-1 rounded" %>
+              </td>
+            </tr>
+          <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
