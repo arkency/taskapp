@@ -1,0 +1,7 @@
+<tr id="<%= dom_id(project) %>">
+  <td class="py-2 px-4 border border-gray-300"><%= project.name %></td>
+  <td class="py-2 px-4 border border-gray-300"><%= project.priority %></td>
+  <td class="py-2 px-4 border border-gray-300">
+    <%= button_to "Complete", complete_project_path(project.id), method: :patch, class: "bg-green-500 text-white px-3 py-1 rounded" %>
+  </td>
+</tr>
