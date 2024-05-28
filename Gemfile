@@ -58,6 +58,7 @@ group :development do
 
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
+  gem "faker"
 end
 
 group :test do
@@ -66,3 +67,5 @@ group :test do
   gem "selenium-webdriver"
 end
 gem "rails_event_store", "~> 2.14.0"
+
+gem "tailwindcss-rails", "~> 2.6"

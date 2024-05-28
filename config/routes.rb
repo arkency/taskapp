@@ -13,6 +13,14 @@ Rails.application.routes.draw do
   patch "tasks/:id/assign_date" => "tasks#assign_date"
   patch "tasks/:id/change_name" => "tasks#change_name"
 
+  resources :projects do
+    member do
+      patch :start
+    end
+  end
+
+  get "kanban" => "projects#kanban"
+
   # Defines the root path route ("/")
   # root "posts#index"
 end
