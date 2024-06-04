@@ -10,7 +10,7 @@
                         src: projects_path(page: @pagy.next, format: :turbo_stream),
                         loading: :lazy do %>
       <div class="pt-8 flex items-center justify-center bg-gray-50 bg-opacity-25 opacity-100 backdrop-blur-sm transition-opacity">
-        <%= image_tag("ssr.svg") %>
+        <%= image_tag("ssr.svg", class: "animate-pulse") %>
       </div>
     <% end %>
   <% end %>
