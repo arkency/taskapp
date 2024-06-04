@@ -1,6 +1,6 @@
 class ProjectsController < ApplicationController
   def index
-    @projects = Project.all
+    @pagy, @projects = pagy_countless(Project.all, items: 10)
   end
 
   def kanban

@@ -1,0 +1,14 @@
+<%= turbo_stream.append :projects_table_body do %>
+  <% @projects.each do |project| %>
+    <%= render "projects/table_row", project: %>
+  <% end %>
+<% end %>
+
+<%= turbo_stream.replace :pagination do %>
+  <% if @pagy.next.present? %>
+    <%= turbo_frame_tag :pagination,
+                        src: projects_path(page: @pagy.next, format: :turbo_stream),
+                        loading: :lazy do %>
+    <% end %>
+  <% end %>
+<% end %>

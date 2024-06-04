@@ -14,11 +14,15 @@
         <th class="w-1/8 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Actions</th>
       </tr>
       </thead>
-      <tbody>
+      <tbody id="projects_table_body">
       <% @projects.each do |project| %>
       <%= render "projects/table_row", project: %>
       <% end %>
       </tbody>
     </table>
+    <%= turbo_frame_tag :pagination,
+                        src: projects_path(page: @pagy.next, format: :turbo_stream),
+                        loading: :lazy do %>
+    <% end %>
   </div>
 </div>
