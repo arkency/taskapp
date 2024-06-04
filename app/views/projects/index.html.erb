@@ -16,13 +16,18 @@
       </thead>
       <tbody id="projects_table_body">
       <% @projects.each do |project| %>
-      <%= render "projects/table_row", project: %>
+        <%= render "projects/table_row", project: %>
       <% end %>
       </tbody>
     </table>
     <%= turbo_frame_tag :pagination,
                         src: projects_path(page: @pagy.next, format: :turbo_stream),
                         loading: :lazy do %>
+      <% if @pagy.next.present? %>
+        <div class="pt-8 flex items-center justify-center bg-gray-50 bg-opacity-25 opacity-100 backdrop-blur-sm transition-opacity">
+          <%= image_tag("ssr.svg") %>
+        </div>
+  <% end %>
     <% end %>
   </div>
 </div>
