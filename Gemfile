@@ -70,3 +70,5 @@ end
 gem "rails_event_store", "~> 2.14.0"
 
 gem "tailwindcss-rails", "~> 2.6"
+
+gem "pagy", "~> 8.4"
