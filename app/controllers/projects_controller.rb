@@ -1,6 +1,17 @@
 class ProjectsController < ApplicationController
   def index
-    @pagy, @projects = pagy_countless(Project.all, items: 10)
+    @projects = get_projects
+    render 'projects/index'
+  end
+
+  def index_inline
+    @projects = get_projects
+    render 'projects/index_inline'
+  end
+
+  def index_collection
+    @projects = get_projects
+    render 'projects/index_collection'
   end
 
   def kanban
@@ -52,6 +63,10 @@ class ProjectsController < ApplicationController
   end
 
   private
+
+  def get_projects
+    Project.all.limit(5000)
+  end
 
   def dom_id_for(project)
     "project_#{project.id}"

@@ -13,6 +13,9 @@ Rails.application.routes.draw do
   patch "tasks/:id/assign_date" => "tasks#assign_date"
   patch "tasks/:id/change_name" => "tasks#change_name"
 
+  get "projects_inline" => "projects#index_inline"
+  get "projects_collection" => "projects#index_collection"
+
   resources :projects do
     member do
       patch :start

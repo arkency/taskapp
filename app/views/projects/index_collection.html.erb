@@ -15,9 +15,7 @@
       </tr>
       </thead>
       <tbody id="projects_table_body">
-      <% @projects.each do |project| %>
-        <%= render "projects/table_row", project: %>
-      <% end %>
+      <%= render partial: 'projects/table_row', collection: @projects, as: :project %>
       </tbody>
     </table>
   </div>
