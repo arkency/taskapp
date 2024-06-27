@@ -10,7 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_05_28_070433) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_27_063408) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "event_store_events", force: :cascade do |t|
     t.string "event_id", limit: 36, null: false
     t.string "event_type", null: false
@@ -42,6 +45,14 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_28_070433) do
     t.string "priority"
     t.date "start_date"
     t.date "end_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "task_view_models", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name"
+    t.datetime "due_date"
+    t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
