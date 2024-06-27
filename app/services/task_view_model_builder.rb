@@ -29,29 +29,20 @@ class TaskViewModelBuilder
   end
 
   def change_task_name(event)
-    task = TaskViewModel.find(event.data.fetch(:task_id)).lock!
-    if task.name_changed_at.nil? || task.name_changed_at < event.metadata[:timestamp]
-      task.name_changed_at = event.metadata[:timestamp]
-      task.name = event.data.fetch(:name)
-    end
+    task = TaskViewModel.find(event.data.fetch(:task_id))
+    task.name = event.data.fetch(:name)
     task.save!
   end
 
   def assign_date(event)
-    task = TaskViewModel.find(event.data.fetch(:task_id)).lock!
-    if task.due_date_changed_at.nil? || task.due_date_changed_at < event.metadata[:timestamp]
-      task.due_date_changed_at = event.metadata[:timestamp]
-      task.due_date = event.data.fetch(:due_date)
-    end
+    task = TaskViewModel.find(event.data.fetch(:task_id))
+    task.due_date = event.data.fetch(:due_date)
     task.save!
   end
 
   def complete_task(event)
-    task = TaskViewModel.find(event.data.fetch(:task_id)).lock!
-    if task.status_changed_at.nil? || task.status_changed_at < event.metadata[:timestamp]
-      task.status_changed_at = event.metadata[:timestamp]
-      task.status = :completed
-    end
+    task = TaskViewModel.find(event.data.fetch(:task_id))
+    task.status = :completed
     task.save!
   end
 
@@ -62,11 +53,8 @@ class TaskViewModelBuilder
   end
 
   def reopen_task(event)
-    task = TaskViewModel.find(event.data.fetch(:task_id)).lock!
-    if task.status_changed_at.nil? || task.status_changed_at < event.metadata[:timestamp]
-      task.status_changed_at = event.metadata[:timestamp]
-      task.status = :open
-    end
+    task = TaskViewModel.find(event.data.fetch(:task_id))
+    task.status = :open
     task.save!
   end
 end
