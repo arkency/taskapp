@@ -1,0 +1,2 @@
+class TaskViewModel < ApplicationRecord
+end
