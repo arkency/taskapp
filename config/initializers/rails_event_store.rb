@@ -53,6 +53,9 @@ Rails.configuration.to_prepare do
     store.subscribe_to_all_events(LinkAllWithNameParam.new)
 
     store.subscribe(LinkTaskEvents.new, to: [TaskCompleted, EmployeeAssignedToTask, EmployeeUnassignedFromTask])
+
+    store.subscribe(TaskViewModelBuilder, to: [TaskCreated, TaskNameChanged, TaskDateAssigned, TaskCompleted, TaskDeleted, TaskReopened])
+
     # store.subscribe_to_all_events(LinkByMetadata.new(event_store: event_store, key: :tenant_id))
   end
 end
