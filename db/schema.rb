@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_27_085641) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_27_090006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -55,6 +55,10 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_27_085641) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "last_processed_event_id"
+    t.datetime "name_changed_at"
+    t.datetime "due_date_changed_at"
+    t.datetime "status_changed_at"
   end
 
   add_foreign_key "event_store_events_in_streams", "event_store_events", column: "event_id", primary_key: "event_id"
