@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
-class TaskViewModelBuilder
-  def call(event)
+class TaskViewModelBuilder < ActiveJob::Base
+  prepend RailsEventStore::AsyncHandler
+
+  def perform(event)
     case event
     when TaskCreated
       create_task(event)
