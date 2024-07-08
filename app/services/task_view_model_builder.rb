@@ -4,7 +4,7 @@ class TaskViewModelBuilder < EventHandler
   def call(event)
     task_id = event.data.fetch(:task_id)
     task_view_model = TaskViewModel.find_by(id: task_id) || TaskViewModel.new(id: task_id)
-    # task_view_model.lock!
+
     checkpoint = task_view_model.checkpoint
 
     task_stream = event_store.read.stream("Task$#{task_id}")
