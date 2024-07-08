@@ -24,7 +24,6 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
 
       fail_occurred = false
       wait_for_it = true
-      exception = nil
       task_id = SecureRandom.uuid
       event_store.publish(TaskCreated.new(data: { task_id: task_id }), stream_name: "Task$#{task_id}")
       perform_enqueued_jobs(only: TaskViewModelBuilder)
@@ -39,7 +38,6 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
             task_name_changed_newer.metadata[:sleep] = true
             SlowTaskViewModelBuilder.new.call(task_name_changed_newer)
           rescue StandardError => e
-            exception = e
             fail_occurred = true
           end
         end,
@@ -51,7 +49,6 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
             event_store.append(task_name_changed_newer, stream_name: "Task$#{task_id}")
             TaskViewModelBuilder.new.call(task_name_changed_newer)
           rescue StandardError => e
-            exception = e
             fail_occurred = true
           end
         end
@@ -60,7 +57,7 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
       threads.each(&:join)
 
       assert_equal "New name", TaskViewModel.find(task_id).name
-      # assert fail_occurred
+      refute fail_occurred
     ensure
       ActiveRecord::Base.connection_pool.disconnect!
     end
