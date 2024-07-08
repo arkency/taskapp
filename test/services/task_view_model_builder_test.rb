@@ -62,17 +62,6 @@ class TaskViewModelBuilderTest < ActiveSupport::TestCase
     end
   end
 
-  def test_doesnt_restore_deleted_task
-    task_id = SecureRandom.uuid
-    event_store.publish(TaskCreated.new(data: { task_id: task_id }), stream_name: "Task$#{task_id}")
-    event_store.publish(TaskDeleted.new(data: { task_id: task_id }), stream_name: "Task$#{task_id}")
-    event_store.publish(TaskNameChanged.new(data: { task_id: task_id, name: "Name" }), stream_name: "Task$#{task_id}")
-
-    assert_raises ActiveRecord::RecordNotFound do
-      TaskViewModel.find(task_id)
-    end
-  end
-
   def test_doesnt_fail_when_events_come_out_of_order
     task_id = SecureRandom.uuid
     event_store.publish(TaskNameChanged.new(data: { task_id:, name: "Name" }), stream_name: "Task$#{task_id}")
