@@ -19,6 +19,7 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
 
   def test_builder
     begin
+      exception = nil
       concurrency_level = ActiveRecord::Base.connection.pool.size - 1
       assert concurrency_level >= 4
 
@@ -37,6 +38,7 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
           begin
             SlowTaskViewModelBuilder.new.call(task_name_changed_newer)
           rescue StandardError => e
+            exception = e
             fail_occurred = true
           end
         end,
@@ -49,6 +51,7 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
             TaskViewModelBuilder.new.call(task_name_changed_newer)
           rescue StandardError => e
             fail_occurred = true
+            exception = e
           end
         end
       ]
@@ -57,6 +60,7 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
 
       assert_equal "New name", TaskViewModel.find(task_id).name
       assert fail_occurred
+      assert exception.is_a?(ActiveRecord::StaleObjectError)
     ensure
       ActiveRecord::Base.connection_pool.disconnect!
     end
