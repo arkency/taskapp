@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_07_08_094719) do
+ActiveRecord::Schema[7.1].define(version: 2024_07_08_113302) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -59,6 +59,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_08_094719) do
     t.datetime "due_date_changed_at"
     t.datetime "status_changed_at"
     t.uuid "checkpoint"
+    t.integer "lock_version", default: 0, null: false
   end
 
   add_foreign_key "event_store_events_in_streams", "event_store_events", column: "event_id", primary_key: "event_id"

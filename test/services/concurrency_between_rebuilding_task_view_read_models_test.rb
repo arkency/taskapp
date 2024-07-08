@@ -57,7 +57,7 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
       threads.each(&:join)
 
       assert_equal "New name", TaskViewModel.find(task_id).name
-      refute fail_occurred
+      assert fail_occurred
     ensure
       ActiveRecord::Base.connection_pool.disconnect!
     end
