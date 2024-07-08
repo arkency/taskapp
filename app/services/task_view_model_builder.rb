@@ -2,20 +2,32 @@
 
 class TaskViewModelBuilder < EventHandler
   def call(event)
-    case event
-    when TaskCreated
-      create_task(event)
-    when TaskNameChanged
-      change_task_name(event)
-    when TaskDateAssigned
-      assign_date(event)
-    when TaskCompleted
-      complete_task(event)
-    when TaskDeleted
-      delete_task(event)
-    when TaskReopened
-      reopen_task(event)
+    task_view_model = TaskViewModel.find_by(id: task_id = event.data.fetch(:task_id)) || TaskViewModel.new(id: task_id)
+    checkpoint = task_view_model.checkpoint
+
+    task_stream = event_store.read.stream("Task$#{task_id}")
+    task_stream = task_stream.from(checkpoint) if checkpoint
+
+    task_stream.each do |event|
+      case event
+      when TaskCreated
+        create_task(event, task_view_model)
+      when TaskNameChanged
+        change_task_name(event, task_view_model)
+      when TaskDateAssigned
+        assign_date(event, task_view_model)
+      when TaskCompleted
+        complete_task(event, task_view_model)
+      when TaskDeleted
+        delete_task(event, task_view_model)
+      when TaskReopened
+        reopen_task(event, task_view_model)
+      end
+
+      task_view_model.checkpoint = event.event_id
     end
+
+    task_view_model.save!
   end
 
   private
@@ -24,52 +36,29 @@ class TaskViewModelBuilder < EventHandler
     Rails.configuration.event_store
   end
 
-  def create_task(event)
-    task = TaskViewModel.find_or_initialize_by(id: event.data.fetch(:task_id))
+  def create_task(_event, task)
     task.status = :open
-    task.save!
   end
 
-  def change_task_name(event)
-    task = TaskViewModel.find_or_initialize_by(id: event.data.fetch(:task_id)).lock!
-    if task.name_changed_at.nil? || task.name_changed_at < event.metadata[:timestamp]
-      task.name_changed_at = event.metadata[:timestamp]
-      task.name = event.data.fetch(:name)
-    end
-    task.save!
+  def change_task_name(event, task)
+    task.name = event.data.fetch(:name)
   end
 
-  def assign_date(event)
-    task = TaskViewModel.find_or_initialize_by(id: event.data.fetch(:task_id)).lock!
-    if task.due_date_changed_at.nil? || task.due_date_changed_at < event.metadata[:timestamp]
-      task.due_date_changed_at = event.metadata[:timestamp]
-      task.due_date = event.data.fetch(:due_date)
-    end
-    task.save!
+  def assign_date(event, task)
+    task.due_date = event.data.fetch(:due_date)
   end
 
-  def complete_task(event)
-    task = TaskViewModel.find_or_initialize_by(id: event.data.fetch(:task_id)).lock!
-    if task.status_changed_at.nil? || task.status_changed_at < event.metadata[:timestamp]
-      task.status_changed_at = event.metadata[:timestamp]
-      task.status = :completed
-    end
-    task.save!
+  def complete_task(_event, task)
+    task.status = :completed
   end
 
-  def delete_task(event)
-    task = TaskViewModel.find(event.data.fetch(:task_id))
+  def delete_task(_event, task)
     task.destroy!
   rescue ActiveRecord::RecordNotFound
   end
 
-  def reopen_task(event)
-    task = TaskViewModel.find_or_initialize_by(id: event.data.fetch(:task_id)).lock!
-    if task.status_changed_at.nil? || task.status_changed_at < event.metadata[:timestamp]
-      task.status_changed_at = event.metadata[:timestamp]
-      task.status = :open
-    end
-    task.save!
+  def reopen_task(_event, task)
+    task.status = :open
   end
 end
 
