@@ -65,6 +65,7 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
   gem "timecop"
+  gem "database_cleaner-active_record", require: false
 end
 gem "rails_event_store", "~> 2.14.0"
 
