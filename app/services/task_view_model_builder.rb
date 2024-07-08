@@ -2,11 +2,13 @@
 
 class TaskViewModelBuilder < EventHandler
   def call(event)
+    @sleeping = event.metadata[:sleep]
     task_view_model = TaskViewModel.find_by(id: task_id = event.data.fetch(:task_id)) || TaskViewModel.new(id: task_id)
     checkpoint = task_view_model.checkpoint
 
     task_stream = event_store.read.stream("Task$#{task_id}")
     task_stream = task_stream.from(checkpoint) if checkpoint
+    pp [ object_id, task_stream.to_a.map(&:class) ]
 
     task_stream.each do |event|
       case event
@@ -27,7 +29,8 @@ class TaskViewModelBuilder < EventHandler
       task_view_model.checkpoint = event.event_id
     end
 
-    task_view_model.save!
+    pp task_view_model.save
+    pp task_view_model.reload.name
   end
 
   private
@@ -41,7 +44,12 @@ class TaskViewModelBuilder < EventHandler
   end
 
   def change_task_name(event, task)
-    task.name = event.data.fetch(:name)
+    name = event.data.fetch(:name)
+    if @sleeping
+      sleep 5
+    end
+    pp [object_id, name]
+    task.name = name
   end
 
   def assign_date(event, task)
