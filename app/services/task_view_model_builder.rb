@@ -3,34 +3,33 @@
 class TaskViewModelBuilder < EventHandler
   def call(event)
     task_id = event.data.fetch(:task_id)
-    ApplicationRecord.with_advisory_lock("task_view_model_#{task_id}") do
-      task_view_model = TaskViewModel.find_by(id: task_id) || TaskViewModel.new(id: task_id)
-      checkpoint = task_view_model.checkpoint
+    task_view_model = TaskViewModel.find_by(id: task_id) || TaskViewModel.new(id: task_id)
+    # task_view_model.lock!
+    checkpoint = task_view_model.checkpoint
 
-      task_stream = event_store.read.stream("Task$#{task_id}")
-      task_stream = task_stream.from(checkpoint) if checkpoint
+    task_stream = event_store.read.stream("Task$#{task_id}")
+    task_stream = task_stream.from(checkpoint) if checkpoint
 
-      task_stream.each do |event|
-        case event
-        when TaskCreated
-          create_task(event, task_view_model)
-        when TaskNameChanged
-          change_task_name(event, task_view_model)
-        when TaskDateAssigned
-          assign_date(event, task_view_model)
-        when TaskCompleted
-          complete_task(event, task_view_model)
-        when TaskDeleted
-          delete_task(event, task_view_model)
-        when TaskReopened
-          reopen_task(event, task_view_model)
-        end
-
-        task_view_model.checkpoint = event.event_id
+    task_stream.each do |event|
+      case event
+      when TaskCreated
+        create_task(event, task_view_model)
+      when TaskNameChanged
+        change_task_name(event, task_view_model)
+      when TaskDateAssigned
+        assign_date(event, task_view_model)
+      when TaskCompleted
+        complete_task(event, task_view_model)
+      when TaskDeleted
+        delete_task(event, task_view_model)
+      when TaskReopened
+        reopen_task(event, task_view_model)
       end
 
-      task_view_model.save!
+      task_view_model.checkpoint = event.event_id
     end
+
+    task_view_model.save!
   end
 
   private
