@@ -35,7 +35,6 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
         Thread.new do
           true while wait_for_it
           begin
-            task_name_changed_newer.metadata[:sleep] = true
             SlowTaskViewModelBuilder.new.call(task_name_changed_newer)
           rescue StandardError => e
             fail_occurred = true
