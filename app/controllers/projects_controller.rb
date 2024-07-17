@@ -1,5 +1,6 @@
 class ProjectsController < ApplicationController
   def index
+    @projects_count = Project.count
     @pagy, @projects = pagy_countless(Project.all, items: 10)
   end
 
@@ -13,12 +14,7 @@ class ProjectsController < ApplicationController
     @project = Project.find(params[:id])
     @project.destroy
 
-    respond_to do |format|
-      format.html { redirect_to projects_url }
-      format.turbo_stream do
-        render turbo_stream: turbo_stream.remove(dom_id_for(@project))
-      end
-    end
+    redirect_to projects_path(format: :html)
   end
 
   def start

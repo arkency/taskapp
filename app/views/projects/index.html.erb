@@ -1,25 +1,29 @@
 <div class="container mx-auto py-8">
-  <h1 class="text-2xl font-bold mb-6">Projects</h1>
+  <%= turbo_frame_tag "projects_top" do %>
+    <h1 class="text-2xl font-bold mb-6">Displaying <%=@projects_count %> Projects</h1>
+  <% end %>
 
   <div class="overflow-x-auto">
-    <table class="min-w-full bg-white border border-gray-300">
-      <thead class="bg-gray-200">
-      <tr>
-        <th class="w-1/6 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Name</th>
-        <th class="w-1/3 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Description</th>
-        <th class="w-1/8 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Status</th>
-        <th class="w-1/8 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Priority</th>
-        <th class="w-1/8 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Start Date</th>
-        <th class="w-1/8 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">End Date</th>
-        <th class="w-1/8 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Actions</th>
-      </tr>
-      </thead>
-      <tbody id="projects_table_body">
-      <% @projects.each do |project| %>
-        <%= render "projects/table_row", project: %>
-      <% end %>
-      </tbody>
-    </table>
+    <%= turbo_frame_tag "projects_table" do %>
+      <table class="min-w-full bg-white border border-gray-300">
+        <thead class="bg-gray-200">
+        <tr>
+          <th class="w-1/6 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Name</th>
+          <th class="w-1/3 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Description</th>
+          <th class="w-1/8 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Status</th>
+          <th class="w-1/8 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Priority</th>
+          <th class="w-1/8 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Start Date</th>
+          <th class="w-1/8 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">End Date</th>
+          <th class="w-1/8 py-2 px-4 text-left uppercase font-semibold text-sm border border-gray-300">Actions</th>
+        </tr>
+        </thead>
+        <tbody id="projects_table_body">
+        <% @projects.each do |project| %>
+          <%= render "projects/table_row", project: %>
+        <% end %>
+        </tbody>
+      </table>
+    <% end %>
     <%= turbo_frame_tag :pagination,
                         src: projects_path(page: @pagy.next, format: :turbo_stream),
                         loading: :lazy do %>
@@ -27,7 +31,7 @@
         <div class="pt-8 flex items-center justify-center bg-gray-50 bg-opacity-25 opacity-100 backdrop-blur-sm transition-opacity">
           <%= image_tag("ssr.svg", class: "animate-pulse") %>
         </div>
-  <% end %>
+      <% end %>
     <% end %>
   </div>
 </div>
