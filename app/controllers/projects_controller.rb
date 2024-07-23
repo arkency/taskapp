@@ -3,6 +3,10 @@ class ProjectsController < ApplicationController
     @pagy, @projects = pagy_countless(Project.all, items: 10)
   end
 
+  def show
+    @project = Project.find(params[:id])
+  end
+
   def kanban
     @todo_projects = Project.where(status: 'planned')
     @in_progress_projects = Project.where(status: 'ongoing')
