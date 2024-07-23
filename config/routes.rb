@@ -16,6 +16,9 @@ Rails.application.routes.draw do
   patch "tasks/:id/change_name" => "tasks#change_name"
 
   resources :projects do
+    collection do
+      patch :extend_all_projects_deadline
+    end
     member do
       patch :start
       patch :complete

@@ -7,6 +7,19 @@ class ProjectsController < ApplicationController
     @project = Project.find(params[:id])
   end
 
+  def extend_all_projects_deadline
+    Project.find_each do |project|
+      project.end_date = project.end_date + 1.week
+      project.save!
+      Turbo::StreamsChannel.broadcast_replace_later_to(
+        "projects",
+        target: dom_id_for(project),
+        partial: "projects/table_row",
+        locals: { project: project },
+      )
+    end
+  end
+
   def kanban
     @todo_projects = Project.where(status: 'planned')
     @in_progress_projects = Project.where(status: 'ongoing')
