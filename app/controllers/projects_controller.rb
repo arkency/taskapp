@@ -14,7 +14,7 @@ class ProjectsController < ApplicationController
       Turbo::StreamsChannel.broadcast_replace_later_to(
         "projects",
         target: dom_id_for(project),
-        partial: "projects/table_row",
+        partial: "projects/project",
         locals: { project: project },
       )
     end

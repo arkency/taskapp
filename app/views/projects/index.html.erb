@@ -23,7 +23,7 @@
       </thead>
       <tbody id="projects_table_body">
       <% @projects.each do |project| %>
-        <%= render "projects/table_row", project: %>
+        <%= render "projects/project", project: %>
       <% end %>
       </tbody>
     </table>

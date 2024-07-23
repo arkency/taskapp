@@ -1,6 +1,6 @@
 <%= turbo_stream.append :projects_table_body do %>
   <% @projects.each do |project| %>
-    <%= render "projects/table_row", project: %>
+    <%= render "projects/project", project: %>
   <% end %>
 <% end %>
 
