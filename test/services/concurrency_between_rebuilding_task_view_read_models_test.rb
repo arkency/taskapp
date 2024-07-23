@@ -9,9 +9,8 @@ class SlowTaskViewModelBuilder < TaskViewModelBuilder
   end
 
   def change_task_name(event, task)
-    @exchanger.exchange(:wait_after_fetch)
+    @exchanger.exchange(:message)
     super
-    @exchanger.exchange(:wait_to_be_finished)
   end
 end
 
@@ -42,7 +41,6 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
       threads = [
         Thread.new do
           begin
-            exchanger.exchange(:waiting_for_start)
             SlowTaskViewModelBuilder.new(exchanger).call(task_name_changed_newer)
           rescue StandardError => e
             exception = e
@@ -51,12 +49,10 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
         end,
         Thread.new do
           begin
-            exchanger.exchange(:start)
             task_name_changed_newer = TaskNameChanged.new(data: { task_id: task_id, name: "New name" })
-            exchanger.exchange(:continue_after_fetch)
             event_store.append(task_name_changed_newer, stream_name: "Task$#{task_id}")
             TaskViewModelBuilder.new.call(task_name_changed_newer)
-            exchanger.exchange(:finish_and_let_slower_job_finish)
+            exchanger.exchange(:message)
           rescue StandardError => e
             unexpected_failure = true
           end
