@@ -1,6 +1,6 @@
 class ProjectsController < ApplicationController
   def index
-    @pagy, @projects = pagy_countless(Project.all, items: 10)
+    @pagy, @projects = pagy_countless(Project.all.order(:id), items: 10)
   end
 
   def show
