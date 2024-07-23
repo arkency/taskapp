@@ -17,6 +17,11 @@ class ProjectsController < ApplicationController
     @project = Project.find(params[:id])
     @project.destroy
 
+    Turbo::StreamsChannel.broadcast_remove_to(
+      "projects",
+      target: @project,
+    )
+
     respond_to do |format|
       format.html { redirect_to projects_url }
       format.turbo_stream do
