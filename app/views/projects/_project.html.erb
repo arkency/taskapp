@@ -1,5 +1,5 @@
 <tr class="border border-gray-300" id="<%= dom_id(project) %>">
-  <td class="py-2 px-4 border border-gray-300"><%= project.name %></td>
+  <td class="py-2 px-4 border border-gray-300"><%= link_to project.name, project %></td>
   <td class="py-2 px-4 border border-gray-300"><%= project.description %></td>
   <td class="py-2 px-4 border border-gray-300"><%= project.status %></td>
   <td class="py-2 px-4 border border-gray-300"><%= project.priority %></td>
