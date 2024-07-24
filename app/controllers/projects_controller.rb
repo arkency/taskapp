@@ -11,6 +11,7 @@ class ProjectsController < ApplicationController
     Project.find_each do |project|
       project.end_date = project.end_date + 1.week
       project.save!
+      sleep 0.5
       Turbo::StreamsChannel.broadcast_replace_later_to(
         "projects",
         target: dom_id_for(project),
