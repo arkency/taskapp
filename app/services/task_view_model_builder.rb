@@ -3,7 +3,8 @@
 class TaskViewModelBuilder < EventHandler
   def call(event)
     task_id = event.data.fetch(:task_id)
-    task_view_model = TaskViewModel.find_by(id: task_id) || TaskViewModel.new(id: task_id)
+    task_view_model =
+      TaskViewModel.find_by(id: task_id) || TaskViewModel.new(id: task_id)
 
     checkpoint = task_view_model.checkpoint
 
@@ -29,23 +30,21 @@ class TaskViewModelBuilder < EventHandler
       task_view_model.checkpoint = event.event_id
     end
 
-    task_view_model.save!
+    ApplicationRecord.with_advisory_lock("Task$#{task_id}") { task_view_model.save! }
   end
 
   def replay(task_id)
     task_stream = event_store.read.stream("Task$#{task_id}")
 
-    TaskViewModel.transaction do
-      task_view_model = TaskViewModel.find_by(id: task_id)
-      task_view_model.destroy!
-      replayed_task_view_model = TaskViewModel.new(id: task_id)
+    replayed_task_view_model = TaskViewModel.new(id: task_id)
 
+    ApplicationRecord.with_advisory_lock("Task$#{task_id}") do
       task_stream.each do |event|
         case event
         when TaskCreated
-          create_task(event,  replayed_task_view_model)
+          create_task(event, replayed_task_view_model)
         when TaskNameChanged
-          change_task_name(event,replayed_task_view_model )
+          change_task_name(event, replayed_task_view_model)
         when TaskDateAssigned
           assign_date(event, replayed_task_view_model)
         when TaskCompleted
@@ -58,7 +57,8 @@ class TaskViewModelBuilder < EventHandler
 
         replayed_task_view_model.checkpoint = event.event_id
       end
-
+      task_view_model = TaskViewModel.find_by(id: task_id)
+      task_view_model.destroy!
       replayed_task_view_model.save!
     end
   end
@@ -95,4 +95,3 @@ class TaskViewModelBuilder < EventHandler
     task.status = :open
   end
 end
-
