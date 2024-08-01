@@ -75,6 +75,21 @@ class TaskViewModelBuilderTest < ActiveSupport::TestCase
     end
   end
 
+  def test_state_after_replay_is_the_same_as_after_initial_build
+    task_id = SecureRandom.uuid
+    event_store.publish(TaskCreated.new(data: { task_id: task_id }), stream_name: "Task$#{task_id}")
+    event_store.publish(TaskCompleted.new(data: { task_id: }, metadata: { timestamp: Time.now }), stream_name: "Task$#{task_id}")
+    event_store.publish(TaskCompleted.new(data: { task_id: }, metadata: { timestamp: Time.now - 1.minute }), stream_name: "Task$#{task_id}")
+
+    perform_enqueued_jobs(only: TaskViewModelBuilder)
+
+    TaskViewModelBuilder.new.replay(task_id)
+
+    TaskViewModel.find(task_id).tap do |task|
+      assert_equal "completed", task.status
+    end
+  end
+  
   private
 
   def event_store

@@ -32,6 +32,37 @@ class TaskViewModelBuilder < EventHandler
     task_view_model.save!
   end
 
+  def replay(task_id)
+    task_stream = event_store.read.stream("Task$#{task_id}")
+
+    TaskViewModel.transaction do
+      task_view_model = TaskViewModel.find_by(id: task_id)
+      task_view_model.destroy!
+      replayed_task_view_model = TaskViewModel.new(id: task_id)
+
+      task_stream.each do |event|
+        case event
+        when TaskCreated
+          create_task(event,  replayed_task_view_model)
+        when TaskNameChanged
+          change_task_name(event,replayed_task_view_model )
+        when TaskDateAssigned
+          assign_date(event, replayed_task_view_model)
+        when TaskCompleted
+          complete_task(event, replayed_task_view_model)
+        when TaskDeleted
+          delete_task(event, replayed_task_view_model)
+        when TaskReopened
+          reopen_task(event, replayed_task_view_model)
+        end
+
+        replayed_task_view_model.checkpoint = event.event_id
+      end
+
+      replayed_task_view_model.save!
+    end
+  end
+
   private
 
   def event_store

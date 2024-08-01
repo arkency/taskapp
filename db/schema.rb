@@ -58,8 +58,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_08_113302) do
     t.datetime "name_changed_at"
     t.datetime "due_date_changed_at"
     t.datetime "status_changed_at"
-    t.uuid "checkpoint"
     t.integer "lock_version", default: 0, null: false
+    t.uuid "checkpoint"
   end
 
   add_foreign_key "event_store_events_in_streams", "event_store_events", column: "event_id", primary_key: "event_id"
