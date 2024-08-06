@@ -1,52 +1,68 @@
 # frozen_string_literal: true
 
+class TaskStream
+  attr_reader :stream
+
+  def initialize(task_id)
+    @stream = "Task$#{task_id}"
+  end
+
+  def to_s
+    stream
+  end
+
+  def self.for(task_id)
+    new(task_id).stream.to_s
+  end
+end
+
 class TaskService
   def create_task
     uuid = SecureRandom.uuid
     task = Task.new(uuid)
     task.create
-    AggregateRoot::Repository.new.store(task, "Task$#{uuid}")
+    AggregateRoot::Repository.new.store(task, TaskStream.for(uuid))
     uuid
   end
 
   def change_name(task_id, new_name)
     task = find_task(task_id)
     task.change_name(new_name)
-    @repository.store(task, "Task$#{task_id}")
+    @repository.store(task, TaskStream.for(task_id))
   end
 
   def delete_task(task_id)
     task = find_task(task_id)
     task.delete
-    @repository.store(task, "Task$#{task_id}")
+    @repository.store(task, TaskStream.for(task_id))
   end
 
   def assign_date(task_id, new_date)
     task = find_task(task_id)
     task.assign_date(new_date)
-    @repository.store(task, "Task$#{task_id}")
+    @repository.store(task, TaskStream.for(task_id))
   end
 
   def complete_task(task_id)
     task = find_task(task_id)
     task.complete
-    @repository.store(task, "Task$#{task_id}")
+    @repository.store(task, TaskStream.for(task_id))
   end
 
   def reopen_task(task_id)
     task = find_task(task_id)
     task.reopen
-    @repository.store(task, "Task$#{task_id}")
+    @repository.store(task, TaskStream.for(task_id))
   end
 
   def find_task(task_id)
     @repository ||= AggregateRoot::Repository.new
-    @repository.load(Task.new(task_id), "Task$#{task_id}")
+    @repository.load(Task.new(task_id), TaskStream.for(task_id))
   end
 
   def task_state(task_id)
     RailsEventStore::Projection
-      .from_stream("Task$#{task_id}")
+      .from_stream(TaskStream.for(task_id))
       .init(-> { { status: :open } })
       .when(TaskCreated, ->(state, event) { state[:status] = :open; state[:id] = event.data.fetch(:task_id) })
       .when(TaskCompleted, ->(state, event) { state[:status] = :completed })
