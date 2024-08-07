@@ -48,7 +48,7 @@ class ConcurrencyBetweenRebuildingTaskViewReadModelsTest < ActiveSupport::TestCa
 
       threads = [
         Thread.new do
-          ControlledTaskViewModelBuilder.new(exchanger).replay(task_id)
+          ControlledTaskViewModelBuilder.new(exchanger).rebuild(task_id)
         end,
         Thread.new do
           last_applied_event = TaskCompleted.new(data: { task_id: task_id })
