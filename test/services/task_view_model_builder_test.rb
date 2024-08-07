@@ -83,7 +83,7 @@ class TaskViewModelBuilderTest < ActiveSupport::TestCase
 
     perform_enqueued_jobs(only: TaskViewModelBuilder)
 
-    TaskViewModelBuilder.new.replay(task_id)
+    TaskViewModelBuilder.new.rebuild(task_id)
 
     TaskViewModel.find(task_id).tap do |task|
       assert_equal "completed", task.status

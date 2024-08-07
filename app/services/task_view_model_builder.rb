@@ -33,33 +33,33 @@ class TaskViewModelBuilder < EventHandler
     ApplicationRecord.with_advisory_lock("Task$#{task_id}") { task_view_model.save! }
   end
 
-  def replay(task_id)
+  def rebuild(task_id)
     task_stream = event_store.read.stream("Task$#{task_id}")
 
-    replayed_task_view_model = TaskViewModel.new(id: task_id)
+    rebuilt_task_view_model = TaskViewModel.new(id: task_id)
 
     ApplicationRecord.with_advisory_lock("Task$#{task_id}") do
       task_stream.each do |event|
         case event
         when TaskCreated
-          create_task(event, replayed_task_view_model)
+          create_task(event, rebuilt_task_view_model)
         when TaskNameChanged
-          change_task_name(event, replayed_task_view_model)
+          change_task_name(event, rebuilt_task_view_model)
         when TaskDateAssigned
-          assign_date(event, replayed_task_view_model)
+          assign_date(event, rebuilt_task_view_model)
         when TaskCompleted
-          complete_task(event, replayed_task_view_model)
+          complete_task(event, rebuilt_task_view_model)
         when TaskDeleted
-          delete_task(event, replayed_task_view_model)
+          delete_task(event, rebuilt_task_view_model)
         when TaskReopened
-          reopen_task(event, replayed_task_view_model)
+          reopen_task(event, rebuilt_task_view_model)
         end
 
-        replayed_task_view_model.checkpoint = event.event_id
+        rebuilt_task_view_model.checkpoint = event.event_id
       end
       task_view_model = TaskViewModel.find_by(id: task_id)
       task_view_model.destroy!
-      replayed_task_view_model.save!
+      rebuilt_task_view_model.save!
     end
   end
 
