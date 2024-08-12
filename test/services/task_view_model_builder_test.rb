@@ -75,7 +75,7 @@ class TaskViewModelBuilderTest < ActiveSupport::TestCase
     end
   end
 
-  def test_state_after_replay_is_the_same_as_after_initial_build
+  def test_state_after_rebuild_is_the_same_as_after_initial_build
     task_id = SecureRandom.uuid
     event_store.publish(TaskCreated.new(data: { task_id: task_id }), stream_name: "Task$#{task_id}")
     event_store.publish(TaskCompleted.new(data: { task_id: }, metadata: { timestamp: Time.now }), stream_name: "Task$#{task_id}")
