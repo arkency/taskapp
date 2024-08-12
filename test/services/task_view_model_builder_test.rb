@@ -82,11 +82,13 @@ class TaskViewModelBuilderTest < ActiveSupport::TestCase
     event_store.publish(TaskCompleted.new(data: { task_id: }, metadata: { timestamp: Time.now - 1.minute }), stream_name: "Task$#{task_id}")
 
     perform_enqueued_jobs(only: TaskViewModelBuilder)
+    original = TaskViewModel.find(task_id)
 
     TaskViewModelBuilder.new.rebuild(task_id)
 
     TaskViewModel.find(task_id).tap do |task|
-      assert_equal "completed", task.status
+      assert_equal original.status, task.status
+      assert_equal original.checkpoint, task.checkpoint
     end
   end
   
